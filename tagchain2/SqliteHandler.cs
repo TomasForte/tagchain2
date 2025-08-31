@@ -83,8 +83,8 @@ namespace DatabaseHandling
                                 ", dbConnection, transaction))
                             {
 
-                                command.Parameters.AddWithValue("@itemId1", edge.From);
-                                command.Parameters.AddWithValue("@itemId2", edge.To);
+                                command.Parameters.AddWithValue("@itemId1", edge.From.Id);
+                                command.Parameters.AddWithValue("@itemId2", edge.To.Id);
                                 command.Parameters.AddWithValue("@tagId", edge.TagId);
 
                                 await command.ExecuteNonQueryAsync();
@@ -102,6 +102,36 @@ namespace DatabaseHandling
 
 
             }
+        }
+
+        
+        public async Task<HashSet<(int FromId, int ToId, int TagId)>> GetConnections()
+        {
+            var connections = new HashSet<(int FromId, int ToId, int TagId)>();
+
+            await using (var dbConnection = await GetOpenConnectionAsync())
+            {
+                await using (var command = new SQLiteCommand(dbConnection))
+                {
+                    command.CommandText = @"
+                        SELECT itemId1, itemId2, tagd_id
+                        FROM itemConnections;
+                    ";
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            int fromId = reader.GetInt32(0);
+                            int toId = reader.GetInt32(1);
+                            int tagId = reader.GetInt32(2);
+                            connections.Add((fromId, toId, tagId));
+
+                        }
+                    }
+                }
+            }
+            return connections;
         }
 
 
@@ -140,6 +170,33 @@ namespace DatabaseHandling
                 }
             }
         }
+
+        public async Task<HashSet<int>> GetITems()
+        {
+            HashSet<int> items = new HashSet<int>();
+
+            await using (var dbConnection = await GetOpenConnectionAsync())
+            {
+                await using (var command = new SQLiteCommand(dbConnection))
+                {
+                    command.CommandText = @"
+                        SELECT id
+                        FROM items;
+                    ";
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            items.Add(reader.GetInt32(0));
+
+                        }
+                    }
+                }
+            }
+            return items;
+        }
+
 
         public async Task ClearItems()
         {

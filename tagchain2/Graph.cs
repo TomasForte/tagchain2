@@ -9,12 +9,13 @@ public class Graph
 
     private readonly HashSet<ChainNode> _chains = new();
 
-    
+
 
     public Graph(Dictionary<int, Item> nodes, List<Edge> edges)
     {
         _nodes = nodes;
         _edges = edges;
+        HashSet<ChainNode> _chains = new HashSet<ChainNode>(); 
     }
     public void AddItem(Item item)
     {
@@ -37,8 +38,7 @@ public class Graph
     {
         foreach (var node in _nodes)
         {
-            //chains.Add(new ChainNode(node.Value));
-            Console.WriteLine("Shut up i am not here yet");
+            _chains.Add(new ChainNode(node.Value));
         }
     }
 }
